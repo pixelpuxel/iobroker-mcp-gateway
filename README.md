@@ -2,6 +2,10 @@
 
 Self-hosted bridge between ioBroker and MCP clients such as ChatGPT. No inbound port is required in the home network: the ioBroker adapter initiates an outbound MQTT/TLS connection to a small Docker stack on a public VPS.
 
+## Adapter backend
+
+![Anonymisierte MCP-Gerätezuordnung](docs/screenshots/backend-device-mappings.svg)
+
 ## What it contains
 
 ```text
@@ -160,4 +164,3 @@ curl -s http://127.0.0.1:8140/health
 ## License
 
 MIT
-sed: --: No such file or directory
