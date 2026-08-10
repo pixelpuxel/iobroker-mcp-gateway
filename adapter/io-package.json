@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "mcp-bridge",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "titleLang": {"en": "MCP Bridge", "de": "MCP-Brücke"},
     "desc": {"en": "Automatic MQTT bridge for a remote MCP server", "de": "Automatische MQTT-Brücke für einen entfernten MCP-Server"},
     "authors": ["Gabriel Schreiber"],
@@ -16,19 +16,29 @@
     "loglevel": "info",
     "messagebox": false,
     "supportCustoms": false,
+    "adminUI": {"config": "json"},
     "dependencies": [{"js-controller": ">=6.0.0"}]
   },
   "native": {
     "mqttUrl": "mqtts://mcp.example.com:8884",
     "mqttUsername": "iobroker_mcp_bridge",
+    "mqttPassword": "",
     "secretFile": "/opt/iobroker/iobroker-data/mcp-bridge-secret",
     "caFile": "/opt/iobroker/iobroker-data/mcp-broker-ca.crt",
     "topicPrefix": "iobroker/mcp/v1",
     "includeAllSmartNames": true,
     "includePatterns": [],
+    "includePatternsText": "",
     "excludePatterns": ["alexa2.*", "iot.*", "mqtt.*", "system.*"],
+    "excludePatternsText": "alexa2.*\niot.*\nmqtt.*\nsystem.*",
     "allowInvalidCertificate": false
   },
+  "encryptedNative": ["mqttPassword"],
+  "protectedNative": ["mqttPassword"],
   "objects": [],
-  "instanceObjects": []
+  "instanceObjects": [
+    {"_id":"info.connection","type":"state","common":{"name":"MQTT connection","type":"boolean","role":"indicator.connected","read":true,"write":false,"def":false},"native":{}},
+    {"_id":"info.catalogSize","type":"state","common":{"name":"Published states","type":"number","role":"value","read":true,"write":false,"def":0},"native":{}},
+    {"_id":"info.lastError","type":"state","common":{"name":"Last connection error","type":"string","role":"text","read":true,"write":false,"def":""},"native":{}}
+  ]
 }
