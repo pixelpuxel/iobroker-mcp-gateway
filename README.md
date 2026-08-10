@@ -1,0 +1,129 @@
+# ioBroker MCP Gateway
+
+Self-hosted bridge between ioBroker and MCP clients such as ChatGPT. No inbound port is required in the home network: the ioBroker adapter initiates an outbound MQTT/TLS connection to a small Docker stack on a public VPS.
+
+## What it contains
+
+```text
+ioBroker adapter
+  -> MQTT over TLS
+  -> Gateway application
+  -> versioned integration API
+  -> MCP translation service
+  -> MCP client
+```
+
+- Automatic discovery of ioBroker states with `common.smartName`
+- Optional include/exclude patterns
+- Retained device catalog and live states
+- German natural-language commands such as “alle Lichter aus”
+- Safety confirmation for locks, doors, gates, alarms and similar states
+- Web UI for devices, values and editable context (room, category, aliases, description)
+- Admin-managed users, Argon2id passwords, persistent sessions and audit log
+- Revocable API tokens with scopes
+- OAuth Authorization Code flow with PKCE S256
+- Stateless Streamable HTTP MCP endpoint
+- Explicit input and output schemas for every MCP tool
+
+## Security architecture
+
+The MCP container never connects to MQTT, PostgreSQL or ioBroker. It calls only the versioned gateway API below `/api/integrations/v1/`. Authentication, roles, scopes, device rules and audit logging are enforced by the gateway application.
+
+The gateway and MCP HTTP ports bind to `127.0.0.1`. Nginx terminates HTTPS. Only the MQTT/TLS port is exposed for the outbound home connection. Application API tokens are created in the web UI, stored as hashes and never placed in `.env`.
+
+## Requirements
+
+- Public Linux VPS with Docker Compose, Nginx and Certbot
+- DNS hostname pointing to the VPS
+- ioBroker with Node.js 20 or newer
+- SSH access to VPS and ioBroker host
+
+## VPS installation
+
+Clone or copy the project to `/opt/iobroker-mcp`, then issue a certificate before starting the stack:
+
+```sh
+sudo mkdir -p /opt/iobroker-mcp
+cd /opt/iobroker-mcp
+# copy this repository here
+
+sudo certbot certonly --webroot -w /var/www/html -d mcp.example.com
+sudo DOMAIN=mcp.example.com ADMIN_EMAIL=admin@example.com ./deploy/install-vps.sh
+```
+
+The script:
+
+1. generates independent random PostgreSQL, MQTT and bootstrap credentials;
+2. creates Mosquitto users and ACLs;
+3. copies the TLS certificate into the isolated broker;
+4. builds and starts four containers;
+5. installs the Nginx site and a certificate-renewal hook.
+
+The initial administrator password is written once to:
+
+```text
+/opt/iobroker-mcp/INITIAL_ADMIN_PASSWORD
+```
+
+Change it in the user administration after the first login.
+
+## ioBroker adapter installation
+
+Copy `adapter/` to the ioBroker host and install it as a custom adapter according to your ioBroker version. Configure the instance:
+
+```sh
+iobroker set mcp-bridge.0 \
+  --mqttUrl mqtts://mcp.example.com:8884 \
+  --mqttUsername iobroker_mcp_bridge \
+  --secretFile /opt/iobroker/iobroker-data/mcp-bridge-secret \
+  --caFile /opt/iobroker/iobroker-data/mcp-broker-ca.crt
+iobroker start mcp-bridge.0
+```
+
+Copy `deploy/secrets/bridge_password` securely to the configured `secretFile`. Use the issuing root CA certificate for `caFile`. Do not copy private TLS keys to the ioBroker host.
+
+By default the adapter publishes states that have `common.smartName` and excludes `alexa2.*`, `iot.*`, `mqtt.*` and `system.*`. Newly added or changed ioBroker objects trigger an automatic catalog rebuild.
+
+## MCP connection
+
+Use this endpoint in an OAuth-capable MCP client:
+
+```text
+https://mcp.example.com/mcp
+```
+
+Discovery endpoints:
+
+- `/.well-known/oauth-protected-resource`
+- `/.well-known/oauth-authorization-server`
+
+Scopes:
+
+- `read:devices`
+- `write:devices`
+- `read:audit`
+
+## MCP tools
+
+- `gateway_health`
+- `gateway_me`
+- `list_devices`
+- `get_device_state`
+- `set_device_state`
+- `execute_home_command`
+- `list_audit_logs`
+
+## Validation
+
+```sh
+cd /opt/iobroker-mcp/deploy
+docker compose ps
+curl -s http://127.0.0.1:8139/api/integrations/v1/health
+curl -s http://127.0.0.1:8140/health
+```
+
+`deploy/acceptance-test.py` performs dynamic OAuth registration, PKCE authorization, token exchange, verifies all MCP output schemas, calls a real MCP tool and revokes the token. Supply credentials only as process environment variables when running it.
+
+## License
+
+MIT
