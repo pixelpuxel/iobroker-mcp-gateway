@@ -70,6 +70,11 @@ sed: --: No such file or directory
       "newLine": true,
       "text": "Hier werden alle automatisch erkannten und manuell hinzugefügten MCP-Endpunkte verwaltet. Änderungen gelten nach dem Speichern und Neustart. Haken bei Aktiv entfernen: Zuordnung bleibt erhalten, ist aber über MCP unsichtbar und nicht bedienbar. Papierkorb: Zuordnung dauerhaft löschen; sie wird von der Automatik nicht erneut angelegt. Über + kann jeder Datenpunkt später wieder hinzugefügt werden."
     },
+    "contextInfo": {
+      "type": "staticText",
+      "newLine": true,
+      "text": "MCP-Name, Raum, weitere Namen und Kontext/Beschreibung werden zusammen mit dem Datenpunkt an Gateway und MCP-Server übertragen. Beispiel: Name „Deckenlicht“, Raum „Wohnzimmer“, weitere Namen „Hauptlicht, Esstischlampe“, Kontext „Dimmbare Deckenleuchte über dem Esstisch; nicht mit der Stehlampe verwechseln“. Diese Angaben helfen ChatGPT, natürliche Befehle eindeutig zuzuordnen."
+    },
     "manageMappings": {
       "type": "checkbox",
       "label": "Neu erkannte Datenpunkte automatisch in diese Tabelle aufnehmen",
