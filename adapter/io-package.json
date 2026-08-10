@@ -1,7 +1,8 @@
+sed: --: No such file or directory
 {
   "common": {
     "name": "mcp-bridge",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "titleLang": {"en": "MCP Bridge", "de": "MCP-Brücke"},
     "desc": {"en": "Automatic MQTT bridge for a remote MCP server", "de": "Automatische MQTT-Brücke für einen entfernten MCP-Server"},
     "authors": ["Gabriel Schreiber"],
@@ -27,6 +28,9 @@
     "caFile": "/opt/iobroker/iobroker-data/mcp-broker-ca.crt",
     "topicPrefix": "iobroker/mcp/v1",
     "includeAllSmartNames": true,
+    "manageMappings": true,
+    "deviceMappings": [],
+    "knownObjectIds": [],
     "includePatterns": [],
     "includePatternsText": "",
     "excludePatterns": ["alexa2.*", "iot.*", "mqtt.*", "system.*"],
