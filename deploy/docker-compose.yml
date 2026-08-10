@@ -1,0 +1,81 @@
+name: iobroker-gateway
+
+services:
+  app:
+    build: ../app
+    container_name: iobroker_gateway_app
+    restart: unless-stopped
+    env_file: .env
+    ports: ["127.0.0.1:8139:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      broker: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/integrations/v1/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - ./secrets/admin_password:/run/secrets/admin_password:ro
+      - ./runtime-logs:/app/logs
+    networks: [iobroker_gateway_net]
+
+  mcp:
+    build: ../server
+    container_name: iobroker_gateway_mcp
+    restart: unless-stopped
+    environment:
+      MCP_PORT: 8090
+      MCP_SERVER_NAME: ioBroker MCP
+      MCP_SERVER_VERSION: 1.0.0
+      MCP_PUBLIC_BASE_URL: ${APP_URL}
+      MCP_APP_BASE_URL: http://app:8080
+    ports: ["127.0.0.1:8140:8090"]
+    depends_on:
+      app: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8090/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [iobroker_gateway_net]
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: iobroker_gateway_postgres
+    restart: unless-stopped
+    env_file: .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    networks: [iobroker_gateway_net]
+
+  broker:
+    image: eclipse-mosquitto:2.0.22
+    container_name: iobroker_gateway_broker
+    restart: unless-stopped
+    ports: ["${MQTT_TLS_PORT:-8884}:8883"]
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/aclfile:/mosquitto/config/aclfile:ro
+      - ./secrets/mosquitto.passwd:/mosquitto/config/passwd:ro
+      - ./secrets/tls:/mosquitto/certs:ro
+      - broker_data:/mosquitto/data
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks: [iobroker_gateway_net]
+
+networks:
+  iobroker_gateway_net:
+    name: iobroker_gateway_net
+    ipam: { config: [{ subnet: 10.251.40.0/24 }] }
+
+volumes:
+  postgres_data: { name: iobroker_gateway_postgres_data }
+  broker_data: { name: iobroker_gateway_broker_data }
