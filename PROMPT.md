@@ -13,7 +13,7 @@ Use four Docker Compose services:
 
 The MCP service must call only the versioned application API under `/api/integrations/v1/...`. It must not access MQTT, PostgreSQL, ioBroker, application volumes or host files. Forward the bearer token to the application and let the application enforce user state, roles, scopes and audit.
 
-Provide an ioBroker JSON admin page for MQTT URL, username, encrypted password, optional password file, topic prefix, automatic smart-name discovery, include/exclude patterns, optional CA file and TLS validation. Expose adapter diagnostics under `info.connection`, `info.catalogSize` and `info.lastError`.
+Provide an ioBroker JSON admin page for MQTT URL, username, encrypted password, optional password file, topic prefix, automatic smart-name discovery, include/exclude patterns, optional CA file and TLS validation. Include a persistent editable `deviceMappings` table as the authoritative per-state override layer. Append newly discovered published states without overwriting edits. Maintain a private `knownObjectIds` tombstone list: a row removed by the administrator must not be recreated by discovery, while a newly encountered state may be appended. An enabled manually added row must publish the selected state even without `common.smartName`. Support overrides for name, aliases, semantic kind, access mode, safety confirmation, room and description. Disabled rows remain configured but must not be published. Expose adapter diagnostics under `info.connection`, `info.catalogSize` and `info.lastError`.
 
 Provide a web UI with:
 
@@ -38,3 +38,4 @@ Keep all application services and dependencies inside Docker. On the host use on
 Never commit production secrets. Use `.env.example`, generate deployment secrets locally on the target, keep API tokens in the application, and preserve environment files, runtime data and volumes during deployment.
 
 After changes, run syntax checks, build the Compose stack, verify both health endpoints, run the OAuth/MCP acceptance test, verify unauthorized and missing-scope failures, and update the documentation.
+sed: --: No such file or directory
