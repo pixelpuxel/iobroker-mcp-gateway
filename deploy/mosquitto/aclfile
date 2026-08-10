@@ -1,0 +1,13 @@
+user iobroker_mcp_bridge
+topic write iobroker/mcp/v1/catalog/#
+topic write iobroker/mcp/v1/state/#
+topic write iobroker/mcp/v1/result/#
+topic write iobroker/mcp/v1/presence/#
+topic read iobroker/mcp/v1/command/#
+
+user iobroker_mcp_app
+topic read iobroker/mcp/v1/catalog/#
+topic read iobroker/mcp/v1/state/#
+topic read iobroker/mcp/v1/result/#
+topic read iobroker/mcp/v1/presence/#
+topic write iobroker/mcp/v1/command/#
