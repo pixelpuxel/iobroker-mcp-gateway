@@ -1,0 +1,95 @@
+{
+  "type": "panel",
+  "label": "ioBroker MCP Gateway",
+  "items": {
+    "intro": {
+      "type": "staticText",
+      "newLine": true,
+      "text": "Dieser Adapter erkennt ioBroker-Datenpunkte automatisch und verbindet sich ausgehend per MQTT/TLS mit dem öffentlichen Gateway. Im Heimnetz muss kein Port geöffnet werden. Verbindungsstatus, Anzahl veröffentlichter Datenpunkte und Fehler stehen unter mcp-bridge.0.info."
+    },
+    "connectionHeader": {"type":"header","text":"Gateway-Verbindung","size":2},
+    "mqttUrl": {
+      "type": "text",
+      "label": "MQTT-Adresse",
+      "help": "TLS-Beispiel: mqtts://mcp.example.com:8884",
+      "newLine": true,
+      "sm": 12,
+      "md": 8
+    },
+    "mqttUsername": {
+      "type": "text",
+      "label": "MQTT-Benutzer",
+      "help": "Standardmäßig iobroker_mcp_bridge",
+      "newLine": true,
+      "sm": 12,
+      "md": 6
+    },
+    "mqttPassword": {
+      "type": "password",
+      "label": "MQTT-Passwort",
+      "help": "Wird von ioBroker verschlüsselt gespeichert. Alternativ kann unten eine Passwortdatei angegeben werden.",
+      "newLine": false,
+      "sm": 12,
+      "md": 6
+    },
+    "topicPrefix": {
+      "type": "text",
+      "label": "MQTT Topic-Präfix",
+      "help": "Muss mit dem Gateway übereinstimmen. Standard: iobroker/mcp/v1",
+      "newLine": true,
+      "sm": 12,
+      "md": 6
+    },
+    "discoveryHeader": {"type":"header","text":"Automatische Datenpunkterkennung","size":2},
+    "includeAllSmartNames": {
+      "type": "checkbox",
+      "label": "Alle Datenpunkte mit common.smartName automatisch veröffentlichen",
+      "help": "Neue oder geänderte ioBroker-Objekte werden automatisch erkannt.",
+      "newLine": true
+    },
+    "includePatternsText": {
+      "type": "text",
+      "label": "Zusätzliche Einschlussmuster",
+      "help": "Komma- oder zeilenweise. Sternchen sind erlaubt, z. B. hm-rpc.0.*.STATE",
+      "newLine": true,
+      "sm": 12,
+      "md": 6
+    },
+    "excludePatternsText": {
+      "type": "text",
+      "label": "Ausschlussmuster",
+      "help": "Komma- oder zeilenweise. Diese Muster haben Vorrang vor Einschlüssen.",
+      "newLine": false,
+      "sm": 12,
+      "md": 6
+    },
+    "tlsHeader": {"type":"header","text":"TLS und erweiterte Einstellungen","size":2},
+    "caFile": {
+      "type": "text",
+      "label": "CA-Zertifikatdatei (optional)",
+      "help": "Leer lassen, um die System-Zertifikate zu verwenden. Bei eigener CA den absoluten Pfad angeben.",
+      "newLine": true,
+      "sm": 12,
+      "md": 6
+    },
+    "secretFile": {
+      "type": "text",
+      "label": "Passwortdatei (optional)",
+      "help": "Nur verwenden, wenn das Passwort nicht oben gespeichert wird. Absoluter Pfad, lesbar für den ioBroker-Benutzer.",
+      "newLine": false,
+      "sm": 12,
+      "md": 6
+    },
+    "allowInvalidCertificate": {
+      "type": "checkbox",
+      "label": "Ungültige TLS-Zertifikate akzeptieren (unsicher)",
+      "help": "Nur kurzfristig zur Diagnose verwenden.",
+      "newLine": true
+    },
+    "explanation": {
+      "type": "staticText",
+      "newLine": true,
+      "text": "Nach dem Speichern verbindet sich der Adapter neu. Der Gateway-Server zeigt die erkannten Datenpunkte in seiner Weboberfläche. Schreibbare Werte können dort oder über MCP geändert werden; sicherheitskritische Geräte benötigen eine ausdrückliche Bestätigung."
+    }
+  }
+}
