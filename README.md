@@ -31,6 +31,32 @@ The MCP container never connects to MQTT, PostgreSQL or ioBroker. It calls only 
 
 The gateway and MCP HTTP ports bind to `127.0.0.1`. Nginx terminates HTTPS. Only the MQTT/TLS port is exposed for the outbound home connection. Application API tokens are created in the web UI, stored as hashes and never placed in `.env`.
 
+## Docker deployment model
+
+All application components run in Docker. No Node.js runtime, npm package, PostgreSQL server, Mosquitto service or application process is installed directly on the VPS host.
+
+| Compose service | Container | Purpose | Host exposure |
+| --- | --- | --- | --- |
+| `app` | `iobroker_gateway_app` | Web UI, users, OAuth, integration API and device logic | `127.0.0.1:8139` only |
+| `mcp` | `iobroker_gateway_mcp` | MCP protocol translation to the integration API | `127.0.0.1:8140` only |
+| `postgres` | `iobroker_gateway_postgres` | Persistent users, sessions, tokens, context and audit | no host port |
+| `broker` | `iobroker_gateway_broker` | Isolated MQTT bridge | TLS port `8884` |
+
+Only these host-level components are used:
+
+- Nginx for the public HTTPS reverse proxy
+- Certbot for certificates
+- Docker Engine and Docker Compose
+- files below `/opt/iobroker-mcp`
+
+The installation script ultimately starts the application with:
+
+```sh
+cd /opt/iobroker-mcp/deploy
+docker compose up -d --build
+docker compose ps
+```
+
 ## Requirements
 
 - Public Linux VPS with Docker Compose, Nginx and Certbot
