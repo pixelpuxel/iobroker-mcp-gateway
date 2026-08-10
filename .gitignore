@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+node_modules/
+runtime-logs/
+secrets/
+uploads/
+*.pem
+*.key
+*.crt
+*.p12
+*.tgz
+.DS_Store
+INITIAL_ADMIN_PASSWORD
