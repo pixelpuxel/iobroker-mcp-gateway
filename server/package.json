@@ -1,0 +1,12 @@
+{
+  "name": "iobroker-mcp-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"start": "node server.js", "check": "node --check server.js"},
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "express": "^4.21.2",
+    "zod": "^3.25.76"
+  }
+}
