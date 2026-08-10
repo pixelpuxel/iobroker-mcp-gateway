@@ -1,7 +1,7 @@
 sed: --: No such file or directory
 {
   "name": "iobroker.mcp-bridge",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Automatic ioBroker to remote MCP bridge over MQTT",
   "main": "main.js",
   "license": "MIT",
