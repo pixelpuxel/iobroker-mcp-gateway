@@ -1,0 +1,13 @@
+{
+  "name": "iobroker.mcp-bridge",
+  "version": "1.0.0",
+  "description": "Automatic ioBroker to remote MCP bridge over MQTT",
+  "main": "main.js",
+  "license": "MIT",
+  "author": "Gabriel Schreiber",
+  "dependencies": {
+    "@iobroker/adapter-core": "^3.2.3",
+    "mqtt": "^5.14.1"
+  },
+  "engines": {"node": ">=20"}
+}
