@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+  <rect width="1440" height="900" fill="#f5f7f9"/>
+  <rect width="1440" height="70" fill="#263238"/>
+  <text x="34" y="44" fill="#fff" font-family="Arial,sans-serif" font-size="24" font-weight="700">ioBroker · MCP Bridge</text>
+  <rect x="28" y="96" width="1384" height="760" rx="10" fill="#fff" stroke="#d7dde2"/>
+  <text x="58" y="142" fill="#263238" font-family="Arial,sans-serif" font-size="25" font-weight="700">Veröffentlichte Geräte und Datenpunkte</text>
+  <text x="58" y="178" fill="#607d8b" font-family="Arial,sans-serif" font-size="16">Anonymisierte Beispieldaten · Freigaben, Funktionen und Kontext zentral verwalten</text>
+  <rect x="58" y="204" width="1324" height="54" rx="5" fill="#eef6f7"/>
+  <text x="78" y="237" fill="#37474f" font-family="Arial,sans-serif" font-size="16">☑ Neu erkannte Datenpunkte automatisch in diese Tabelle aufnehmen</text>
+  <rect x="58" y="284" width="1324" height="52" fill="#455a64"/>
+  <g fill="#fff" font-family="Arial,sans-serif" font-size="14" font-weight="700">
+    <text x="76" y="316">Aktiv</text><text x="145" y="316">ioBroker-Datenpunkt</text><text x="445" y="316">MCP-Name</text>
+    <text x="625" y="316">Funktion</text><text x="780" y="316">Zugriff</text><text x="950" y="316">Raum</text><text x="1110" y="316">Kontext</text>
+  </g>
+  <g font-family="Arial,sans-serif" font-size="14" fill="#263238">
+    <rect x="58" y="336" width="1324" height="76" fill="#fff" stroke="#e1e6ea"/><text x="80" y="378" font-size="22" fill="#00a69c">✓</text><text x="145" y="378">demo.0.livingroom.light</text><text x="445" y="378">Wohnzimmerlicht</text><text x="625" y="378">Licht</text><text x="780" y="378">Lesen + schreiben</text><text x="950" y="378">Wohnzimmer</text><text x="1110" y="378">Deckenleuchte</text>
+    <rect x="58" y="412" width="1324" height="76" fill="#f9fbfc" stroke="#e1e6ea"/><text x="80" y="454" font-size="22" fill="#00a69c">✓</text><text x="145" y="454">demo.0.office.temperature</text><text x="445" y="454">Bürotemperatur</text><text x="625" y="454">Temperatur</text><text x="780" y="454">Nur lesen</text><text x="950" y="454">Büro</text><text x="1110" y="454">Raumtemperatur</text>
+    <rect x="58" y="488" width="1324" height="76" fill="#fff" stroke="#e1e6ea"/><text x="80" y="530" font-size="22" fill="#b0bec5">○</text><text x="145" y="530">demo.0.garden.pump</text><text x="445" y="530">Gartenpumpe</text><text x="625" y="530">Schalter</text><text x="780" y="530">Deaktiviert</text><text x="950" y="530">Garten</text><text x="1110" y="530">Bleibt konfiguriert</text>
+    <rect x="58" y="564" width="1324" height="76" fill="#f9fbfc" stroke="#e1e6ea"/><text x="80" y="606" font-size="22" fill="#00a69c">✓</text><text x="145" y="606">demo.0.hall.blind</text><text x="445" y="606">Rollo Flur</text><text x="625" y="606">Rollo/Jalousie</text><text x="780" y="606">Lesen + schreiben</text><text x="950" y="606">Flur</text><text x="1110" y="606">Fenster zur Straße</text>
+  </g>
+  <rect x="58" y="680" width="154" height="46" rx="5" fill="#00a69c"/><text x="81" y="710" fill="#fff" font-family="Arial,sans-serif" font-size="16" font-weight="700">+ Hinzufügen</text>
+  <rect x="1218" y="680" width="164" height="46" rx="5" fill="#1976d2"/><text x="1264" y="710" fill="#fff" font-family="Arial,sans-serif" font-size="16" font-weight="700">Speichern</text>
+  <text x="58" y="790" fill="#607d8b" font-family="Arial,sans-serif" font-size="14">Deaktivieren bewahrt die Zuordnung. Löschen entfernt sie dauerhaft aus der MCP-Freigabe.</text>
+</svg>
