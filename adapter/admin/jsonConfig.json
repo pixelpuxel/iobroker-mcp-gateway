@@ -1,3 +1,4 @@
+sed: --: No such file or directory
 {
   "type": "panel",
   "label": "ioBroker MCP Gateway",
@@ -62,6 +63,43 @@
       "newLine": false,
       "sm": 12,
       "md": 6
+    },
+    "mappingHeader": {"type":"header","text":"Veröffentlichte Geräte und Datenpunkte","size":2},
+    "mappingInfo": {
+      "type": "staticText",
+      "newLine": true,
+      "text": "Hier werden alle automatisch erkannten und manuell hinzugefügten MCP-Endpunkte verwaltet. Änderungen gelten nach dem Speichern und Neustart. Haken bei Aktiv entfernen: Zuordnung bleibt erhalten, ist aber über MCP unsichtbar und nicht bedienbar. Papierkorb: Zuordnung dauerhaft löschen; sie wird von der Automatik nicht erneut angelegt. Über + kann jeder Datenpunkt später wieder hinzugefügt werden."
+    },
+    "manageMappings": {
+      "type": "checkbox",
+      "label": "Neu erkannte Datenpunkte automatisch in diese Tabelle aufnehmen",
+      "help": "Vorhandene Zuordnungen werden dabei niemals überschrieben.",
+      "newLine": true
+    },
+    "deviceMappings": {
+      "type": "table",
+      "label": "MCP-Freigaben und Funktionszuordnung",
+      "newLine": true,
+      "allowAdd": true,
+      "allowDelete": true,
+      "showSecondAddAt": 15,
+      "items": [
+        {"type":"checkbox","attr":"enabled","title":"Aktiv","width":"70px","default":true},
+        {"type":"objectId","attr":"objectId","title":"ioBroker-Datenpunkt","filter":{"type":"state"}},
+        {"type":"text","attr":"name","title":"MCP-Name"},
+        {"type":"select","attr":"kind","title":"Funktion","default":"auto","options":[
+          {"label":"Automatisch","value":"auto"},{"label":"Schalter","value":"switch"},{"label":"Licht","value":"light"},{"label":"Dimmer","value":"dimmer"},{"label":"Rollo/Jalousie","value":"blind"},{"label":"Thermostat","value":"thermostat"},{"label":"Temperatur","value":"temperature"},{"label":"Szene/Taster","value":"scene"},{"label":"Sicherheit","value":"security"},{"label":"Zahl","value":"number"},{"label":"Wert","value":"value"}
+        ]},
+        {"type":"select","attr":"access","title":"Zugriff","default":"auto","options":[
+          {"label":"Automatisch","value":"auto"},{"label":"Nur lesen","value":"read"},{"label":"Lesen und schreiben","value":"write"}
+        ]},
+        {"type":"select","attr":"sensitive","title":"Bestätigung","default":"auto","options":[
+          {"label":"Automatisch","value":"auto"},{"label":"Immer nötig","value":"yes"},{"label":"Nicht nötig","value":"no"}
+        ]},
+        {"type":"text","attr":"room","title":"Raum"},
+        {"type":"text","attr":"aliases","title":"Weitere Namen"},
+        {"type":"text","attr":"description","title":"Kontext/Beschreibung"}
+      ]
     },
     "tlsHeader": {"type":"header","text":"TLS und erweiterte Einstellungen","size":2},
     "caFile": {
