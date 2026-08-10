@@ -12,6 +12,8 @@ class McpBridge extends utils.Adapter {
     this.catalog = new Map();
     this.byObjectId = new Map();
     this.rebuildTimer = null;
+    this.persistTimer = null;
+    this.persistingMappings = false;
     this.prefix = 'iobroker/mcp/v1';
     this.on('ready', this.onReady.bind(this));
     this.on('stateChange', this.onStateChange.bind(this));
@@ -30,6 +32,9 @@ class McpBridge extends utils.Adapter {
 
   included(id, obj) {
     const native = this.config;
+    const mapping = this.mappingFor(id);
+    if (mapping) return mapping.enabled !== false;
+    if ((native.knownObjectIds || []).includes(id)) return false;
     const parse = value => String(value || '').split(/[\n,]+/).map(x => x.trim()).filter(Boolean);
     const excludes = [...(native.excludePatterns || []), ...parse(native.excludePatternsText)];
     const includes = [...(native.includePatterns || []), ...parse(native.includePatternsText)];
@@ -38,6 +43,10 @@ class McpBridge extends utils.Adapter {
     const explicit = [...new Set(includes)].some(p => this.match(p, id));
     const smart = native.includeAllSmartNames !== false && obj?.common?.smartName;
     return Boolean(explicit || smart);
+  }
+
+  mappingFor(id) {
+    return (this.config.deviceMappings || []).find(entry => entry && entry.objectId === id);
   }
 
   localized(value, fallback) {
@@ -69,12 +78,17 @@ class McpBridge extends utils.Adapter {
     const rawSmart = this.localized(common.smartName, this.localized(common.name, id));
     const names = String(rawSmart).split(',').map(x => x.trim()).filter(Boolean);
     const name = names[0] || id.split('.').pop();
-    const kind = this.classify(common);
+    const mapping = this.mappingFor(id) || {};
+    const kind = mapping.kind && mapping.kind !== 'auto' ? mapping.kind : this.classify(common);
+    const mappedName = String(mapping.name || '').trim();
+    const mappedAliases = String(mapping.aliases || '').split(',').map(x => x.trim()).filter(Boolean);
+    const writable = mapping.access === 'read' ? false : mapping.access === 'write' ? true : common.write !== false;
+    const detectedSensitive = this.sensitive(id, mappedName || name, kind);
     return {
       endpointId: this.endpointId(id),
       objectId: id,
-      name,
-      aliases: [...new Set([name, ...names])],
+      name: mappedName || name,
+      aliases: [...new Set([mappedName || name, ...names, ...mappedAliases])],
       kind,
       role: common.role || '',
       type: common.type || 'mixed',
@@ -82,8 +96,10 @@ class McpBridge extends utils.Adapter {
       min: common.min,
       max: common.max,
       readable: common.read !== false,
-      writable: common.write !== false,
-      sensitive: this.sensitive(id, name, kind),
+      writable,
+      sensitive: mapping.sensitive === 'yes' ? true : mapping.sensitive === 'no' ? false : detectedSensitive,
+      room: String(mapping.room || '').trim(),
+      description: String(mapping.description || '').trim(),
       updatedAt: new Date().toISOString()
     };
   }
@@ -98,6 +114,7 @@ class McpBridge extends utils.Adapter {
       next.set(device.endpointId, device);
       reverse.set(id, device);
     }
+    await this.persistDiscoveredMappings(next);
     const removed = [...this.catalog.keys()].filter(id => !next.has(id));
     this.catalog = next;
     this.byObjectId = reverse;
@@ -119,6 +136,43 @@ class McpBridge extends utils.Adapter {
     this.log.info(`MCP catalog published: ${this.catalog.size} states`);
   }
 
+  async persistDiscoveredMappings(next) {
+    if (this.persistingMappings || this.config.manageMappings === false) return;
+    const existing = Array.isArray(this.config.deviceMappings) ? this.config.deviceMappings : [];
+    const previouslyKnown = Array.isArray(this.config.knownObjectIds) ? this.config.knownObjectIds : [];
+    const known = new Set([...previouslyKnown, ...existing.map(entry => entry?.objectId).filter(Boolean)]);
+    const additions = [...next.values()].filter(device => !known.has(device.objectId)).map(device => ({
+      objectId: device.objectId,
+      enabled: true,
+      name: device.name,
+      kind: 'auto',
+      access: 'auto',
+      sensitive: 'auto',
+      room: '',
+      aliases: '',
+      description: ''
+    }));
+    const nextKnown = [...new Set([...known, ...additions.map(entry => entry.objectId)])].sort();
+    if (!additions.length && nextKnown.length === previouslyKnown.length) return;
+    this.persistingMappings = true;
+    try {
+      const instanceId = `system.adapter.${this.namespace}`;
+      const instance = await this.getForeignObjectAsync(instanceId);
+      if (!instance) return;
+      instance.native = instance.native || {};
+      instance.native.deviceMappings = [...existing, ...additions].sort((a, b) => a.objectId.localeCompare(b.objectId));
+      instance.native.knownObjectIds = nextKnown;
+      await this.setForeignObjectAsync(instanceId, instance);
+      this.config.deviceMappings = instance.native.deviceMappings;
+      this.config.knownObjectIds = nextKnown;
+      if (additions.length) this.log.info(`Added ${additions.length} discovered states to the configurable MCP mapping table`);
+    } catch (error) {
+      this.log.warn(`Could not persist discovered MCP mappings: ${error.message}`);
+    } finally {
+      this.persistingMappings = false;
+    }
+  }
+
   publishJson(suffix, value, retain = false) {
     if (!this.client?.connected) return;
     this.client.publish(`${this.prefix}/${suffix}`, JSON.stringify(value), { qos: 1, retain });
@@ -132,7 +186,7 @@ class McpBridge extends utils.Adapter {
 
   normalize(value, type) {
     if (type === 'boolean') return Boolean(value);
-    if (type === 'number') return Number(value);
+    if (type === 'nused: --mber') return Number(value);
     return value;
   }
 
@@ -244,6 +298,7 @@ class McpBridge extends utils.Adapter {
   onUnload(callback) {
     try {
       clearTimeout(this.rebuildTimer);
+      clearTimeout(this.persistTimer);
       if (this.client) {
         this.publishPresence(false);
         this.client.end(true, {}, callback);
@@ -254,3 +309,4 @@ class McpBridge extends utils.Adapter {
 
 if (module.parent) module.exports = options => new McpBridge(options);
 else new McpBridge();
+: No such file or directory
