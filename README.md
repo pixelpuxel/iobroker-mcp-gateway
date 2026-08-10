@@ -1,10 +1,13 @@
+sed: --: No such file or directory
 # ioBroker MCP Gateway
+
+<img src="adapter/admin/mcp-bridge.png" alt="MCP Bridge logo" width="128">
 
 Self-hosted bridge between ioBroker and MCP clients such as ChatGPT. No inbound port is required in the home network: the ioBroker adapter initiates an outbound MQTT/TLS connection to a small Docker stack on a public VPS.
 
 ## Adapter backend
 
-![Anonymisierte MCP-Gerätezuordnung](docs/screenshots/backend-device-mappings.svg)
+![Anonymisierte MCP-Gerätezuordnung](docs/screenshots/backend-device-mappings.png)
 
 ## What it contains
 
@@ -121,6 +124,15 @@ Open the `mcp-bridge` instance settings in ioBroker Admin. Under **Veröffentlic
 
 Each row controls whether the state is published, its MCP name and aliases, semantic function, read/write access, safety confirmation, room and descriptive context. Use the add button to select any other ioBroker state, even without `common.smartName`. Saving restarts the adapter and republishes the resulting catalog. Disabling a row preserves its configuration but removes it from MQTT and MCP. Deleting a row also removes it from MQTT and MCP and records the object ID internally so automatic discovery does not recreate it; it can still be added again explicitly.
 
+The fields **MCP name**, **room**, **additional names** and **context/description** are included in the catalog sent to the gateway and MCP server. They help an MCP client interpret natural-language requests. For example:
+
+| Field | Example |
+| --- | --- |
+| MCP name | `Deckenlicht` |
+| Room | `Wohnzimmer` |
+| Additional names | `Hauptlicht, Esstischlampe` |
+| Context/description | `Dimmbare Deckenleuchte über dem Esstisch; nicht mit der Stehlampe verwechseln.` |
+
 ## MCP connection
 
 Use this endpoint in an OAuth-capable MCP client:
@@ -139,6 +151,33 @@ Scopes:
 - `read:devices`
 - `write:devices`
 - `read:audit`
+
+### Connect the MCP server to ChatGPT
+
+The exact ChatGPT menus and plan availability may change while custom MCP apps are in beta. OpenAI currently documents custom MCP apps in ChatGPT's **developer mode**.
+
+1. Open ChatGPT on the web and go to **Settings → Apps → Advanced settings**. Enable **Developer mode**. In managed workspaces an administrator may first need to allow this under **Workspace settings → Permissions & roles → Connected data**.
+2. Open **Settings → Apps → Create** (or **Workspace settings → Apps → Create**, depending on the workspace).
+3. Enter a name such as `ioBroker MCP`.
+4. Enter the public MCP endpoint:
+
+   ```text
+   https://<your-domain>/mcp
+   ```
+
+   For the example deployment in this project this is `https://iobroker.mcp.schreiber.info/mcp`.
+5. Select OAuth authentication when ChatGPT asks for authentication. The server exposes the required OAuth discovery metadata automatically.
+6. Choose **Scan tools**, complete the gateway login and approve the requested scopes. For device control, the connection needs `write:devices`; read-only use needs `read:devices`.
+7. Select **Create**. The app appears with a `Dev` label while it is a development app.
+8. Start a new chat, select `ioBroker MCP` from the tools/apps menu and try prompts such as:
+
+   ```text
+   Welche Geräte sind im Wohnzimmer verfügbar?
+   Ist das Deckenlicht eingeschaltet?
+   Schalte das Deckenlicht im Wohnzimmer aus.
+   ```
+
+Write actions can trigger an additional ChatGPT confirmation. If MCP tools change later, refresh or recreate the development app so ChatGPT scans the current tool definitions. See OpenAI's current [developer mode and MCP apps documentation](https://help.openai.com/en/articles/12584461-developer-mode-and-full-mcp-connectors-in-chatgpt).
 
 ## MCP tools
 
