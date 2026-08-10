@@ -14,6 +14,7 @@ ioBroker adapter
 ```
 
 - Automatic discovery of ioBroker states with `common.smartName`
+- Editable adapter-side mapping table for every published state
 - Optional include/exclude patterns
 - Retained device catalog and live states
 - German natural-language commands such as “alle Lichter aus”
@@ -110,6 +111,12 @@ Copy `deploy/secrets/bridge_password` securely to the configured `secretFile`. U
 
 By default the adapter publishes states that have `common.smartName` and excludes `alexa2.*`, `iot.*`, `mqtt.*` and `system.*`. Newly added or changed ioBroker objects trigger an automatic catalog rebuild.
 
+### Device and endpoint mappings
+
+Open the `mcp-bridge` instance settings in ioBroker Admin. Under **Veröffentlichte Geräte und Datenpunkte**, the adapter maintains one row for every published endpoint. Newly discovered states are appended automatically; existing edits are preserved.
+
+Each row controls whether the state is published, its MCP name and aliases, semantic function, read/write access, safety confirmation, room and descriptive context. Use the add button to select any other ioBroker state, even without `common.smartName`. Saving restarts the adapter and republishes the resulting catalog. Disabling a row preserves its configuration but removes it from MQTT and MCP. Deleting a row also removes it from MQTT and MCP and records the object ID internally so automatic discovery does not recreate it; it can still be added again explicitly.
+
 ## MCP connection
 
 Use this endpoint in an OAuth-capable MCP client:
@@ -153,3 +160,4 @@ curl -s http://127.0.0.1:8140/health
 ## License
 
 MIT
+sed: --: No such file or directory
