@@ -30,9 +30,12 @@ class McpBridge extends utils.Adapter {
 
   included(id, obj) {
     const native = this.config;
-    const excluded = (native.excludePatterns || []).some(p => this.match(p, id));
+    const parse = value => String(value || '').split(/[\n,]+/).map(x => x.trim()).filter(Boolean);
+    const excludes = [...(native.excludePatterns || []), ...parse(native.excludePatternsText)];
+    const includes = [...(native.includePatterns || []), ...parse(native.includePatternsText)];
+    const excluded = [...new Set(excludes)].some(p => this.match(p, id));
     if (excluded) return false;
-    const explicit = (native.includePatterns || []).some(p => this.match(p, id));
+    const explicit = [...new Set(includes)].some(p => this.match(p, id));
     const smart = native.includeAllSmartNames !== false && obj?.common?.smartName;
     return Boolean(explicit || smart);
   }
@@ -112,6 +115,7 @@ class McpBridge extends utils.Adapter {
     }
     await this.publishAllStates();
     this.publishPresence(true);
+    await this.setStateAsync('info.catalogSize', { val: this.catalog.size, ack: true });
     this.log.info(`MCP catalog published: ${this.catalog.size} states`);
   }
 
@@ -194,24 +198,36 @@ class McpBridge extends utils.Adapter {
 
   async onReady() {
     this.prefix = String(this.config.topicPrefix || 'iobroker/mcp/v1').replace(/\/$/, '');
-    const password = fs.readFileSync(this.config.secretFile, 'utf8').trim();
-    this.client = mqtt.connect(this.config.mqttUrl, {
+    await this.setStateAsync('info.connection', { val: false, ack: true });
+    await this.setStateAsync('info.lastError', { val: '', ack: true });
+    let password = String(this.config.mqttPassword || '');
+    if (!password && this.config.secretFile) password = fs.readFileSync(this.config.secretFile, 'utf8').trim();
+    if (!password) throw new Error('Kein MQTT-Passwort konfiguriert');
+    const mqttOptions = {
       username: this.config.mqttUsername,
       password,
-      ca: fs.readFileSync(this.config.caFile),
       clientId: `iobroker-mcp-${this.host}-${this.instance}`.replace(/[^a-zA-Z0-9_-]/g, '-'),
       rejectUnauthorized: this.config.allowInvalidCertificate !== true,
       clean: true,
       reconnectPeriod: 5000,
       will: { topic: `${this.prefix}/presence/bridge`, payload: JSON.stringify({ online: false }), qos: 1, retain: true }
-    });
+    };
+    if (this.config.caFile) mqttOptions.ca = fs.readFileSync(this.config.caFile);
+    this.client = mqtt.connect(this.config.mqttUrl, mqttOptions);
     this.client.on('connect', async () => {
       this.log.info('Connected to MCP MQTT broker');
+      await this.setStateAsync('info.connection', { val: true, ack: true });
+      await this.setStateAsync('info.lastError', { val: '', ack: true });
       this.client.subscribe(`${this.prefix}/command/+`, { qos: 1 });
       await this.rebuildCatalog();
     });
+    this.client.on('close', () => this.setState('info.connection', false, true));
     this.client.on('message', (topic, payload) => this.command(topic, payload));
-    this.client.on('error', error => this.log.warn(`MQTT: ${error.message}`));
+    this.client.on('error', error => {
+      this.log.warn(`MQTT: ${error.message}`);
+      this.setState('info.connection', false, true);
+      this.setState('info.lastError', error.message, true);
+    });
     await this.subscribeForeignObjectsAsync('*');
   }
 
